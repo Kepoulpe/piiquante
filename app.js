@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const app = express();
 const mongoose = require('mongoose')
-const authRoutes = require('./routes/auth');
+const userRoutes = require('./routes/user');
 
 mongoose.connect(process.env.MONGODB_CONNECTION_STRING, {
     useNewUrlParser: true,
@@ -13,5 +13,4 @@ mongoose.connect(process.env.MONGODB_CONNECTION_STRING, {
 
 app.use(express.json());
 
-app.use('/api/auth/signup', authRoutes);
-app.use('/api/auth/login', authRoutes);
+app.use('/api/auth', userRoutes);

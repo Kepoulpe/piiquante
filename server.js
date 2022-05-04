@@ -14,7 +14,7 @@ const normalizePort = val => {
 };
   
   // TODO make sure 3000 port is not in use
-  const port = normalizePort(process.env.PORT || '3001');
+  const port = normalizePort(process.env.PORT ||'3001');
   
   const errorHandler = error => {
     if (error.syscall !== 'listen') {
