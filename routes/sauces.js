@@ -12,7 +12,7 @@ router.post('/', auth, multer, saucesCtrl.createThing);
 router.put('/:id', auth, multer, saucesCtrl.modifyThing);
 
 // delete one thing on the data base mongoDB
-router.delete('/:id', auth, saucesCtrl.deletething);
+router.delete('/:id', auth, saucesCtrl.deleteThing);
 
 // get one thing in the data base mongoDB 
 router.get('/:id', auth, saucesCtrl.getOneThing);
