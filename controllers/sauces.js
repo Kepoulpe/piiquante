@@ -61,6 +61,7 @@ exports.likeDislikeSauce = (req, res, next) => {
     // TODO if any of the validation questions fail, send an error message with the right status code
     // validate input payload
         // is userId present ?
+        let userId = req.body.userId
         // is it a string ?
         // does that user exist in the database ?
         // is like present ?
@@ -68,8 +69,10 @@ exports.likeDislikeSauce = (req, res, next) => {
         // is like present in the array [0,1,-1] ?
     // validate input sauce
         // get the sauce id from the URL
+        let sauceId = req.params.id
         // does that sauceId exist in the database ?
     // update sauce object in db with new like/dislike OR without previous like/dislike
+    let like = req.body.like
         // if like = 1, add userId to usersLiked array field in database
             // is the userId already present in the usersLiked array ?
                 // if present return already Liked response
