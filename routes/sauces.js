@@ -20,4 +20,6 @@ router.get('/:id', auth, saucesCtrl.getOneThing);
 // get all the things in the data base mongoDB
 router.get('/', auth, saucesCtrl.getAllThings);
 
+router.post('/:id/like', auth, saucesCtrl.likeDislikeSauce);
+
 module.exports = router;

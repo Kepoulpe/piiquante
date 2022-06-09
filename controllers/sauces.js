@@ -1,5 +1,6 @@
-const Thing = require('../models/sauces')
+const Thing = require('../models/sauces');
 const fs = require('fs');
+const User = require('../models/user');
 
 // user can create one sauce in the data base mongoDB
 exports.createThing = (req, res, next) => {
@@ -60,10 +61,21 @@ exports.getAllThings = (req, res, next) => {
 exports.likeDislikeSauce = (req, res, next) => {
     // TODO if any of the validation questions fail, send an error message with the right status code
     // validate input payload
-        // is userId present ?
-        let userId = req.body.userId
-        // is it a string ?
-        // does that user exist in the database ?
+    const userId = req.body.userId
+        // is userId present ? is it a string ?
+        if (typeof userId === 'string' || userId !== 'undefined' || userId !== ' ') {
+            console.log("This is a string")
+            // does that user exist in the database ?
+            User.findOne(userId)
+            
+        }
+
+        
+        else {
+            error => res.status(400).json('Veuillez vous identifier')
+            console.log('This is not a string')
+        }
+
         // is like present ?
         // is it a number ?
         // is like present in the array [0,1,-1] ?
