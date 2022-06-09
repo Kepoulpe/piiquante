@@ -66,7 +66,8 @@ exports.likeDislikeSauce = (req, res, next) => {
         if (typeof userId === 'string' || userId !== 'undefined' || userId !== ' ') {
             console.log("This is a string")
             // does that user exist in the database ?
-            User.findOne(userId)
+            User.match(userId)
+            console.log(User.match(userId))
             
         }
 
