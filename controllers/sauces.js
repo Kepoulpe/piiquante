@@ -65,11 +65,12 @@ exports.likeDislikeSauce = (req, res, next) => {
         // is userId present ? is it a string ?
         if (typeof userId === 'string' || userId !== 'undefined' || userId !== ' ') {
             console.log("This is a string")
-            // does that user exist in the database ?
-            User.match(userId)
-            console.log(User.match(userId))
-            
         }
+
+        // does that user exist in the database ?
+        // if (User.findById(userId) = true) {
+        //     console.log('Utilsateur trouvé')
+        // }
 
         
         else {
