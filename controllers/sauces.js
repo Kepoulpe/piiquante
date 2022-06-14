@@ -1,6 +1,7 @@
 const Thing = require('../models/sauces');
 const fs = require('fs');
 const User = require('../models/user');
+const { markAsUntransferable } = require('worker_threads');
 
 // user can create one sauce in the data base mongoDB
 exports.createThing = (req, res, next) => {
@@ -57,36 +58,58 @@ exports.getAllThings = (req, res, next) => {
         .catch(error => res.status(400).json({ error }));
 };
 
+exports.validateLikeDislikeSaucePayload = (payload) => {
+    const {userId} = payload;
+    if (userId == '' || typeof userId !== 'string') {
+        return { error: 'Veuillez vous identifier' };
+    }
+}
+
 // post like/dislike for one sauce
 exports.likeDislikeSauce = (req, res, next) => {
+    const sauceId = req.params.id
+    const userId = req.body.userId
+    const like = req.body.like
+
     // TODO if any of the validation questions fail, send an error message with the right status code
     // validate input payload
-    const userId = req.body.userId
         // is userId present ? is it a string ?
-        if (typeof userId === 'string' || userId !== 'undefined' || userId !== ' ') {
-            console.log("This is a string")
-        }
+        try {
+            // ! this is not an if block
+            typeof userId === 'string' || userId !== 'undefined' || userId !== '';
+            console.log('valid user')
+            res.status(401).json({ test: "" });
+        } catch (err) {
+            res.status(401).json({ error: 'Veuillez vous identifier' });
+            console.log('invalid user')
+        };
 
         // does that user exist in the database ?
-        // if (User.findById(userId) = true) {
-        //     console.log('Utilsateur trouvé')
-        // }
-
-        
-        else {
-            error => res.status(400).json('Veuillez vous identifier')
-            console.log('This is not a string')
-        }
-
+        try {
+            User.findById(userId, checkLike)
+        } catch (err) {
+            res.status(401).json({ error: err | 'Veuillez créer un compte' });
+            console.log('user not in database')
+        };
         // is like present ?
-        // is it a number ?
-        // is like present in the array [0,1,-1] ?
+        // const checkLike =  ;
+    
+
+        // is it a number ? (not necessary ?)
+        // is like present in the array [0,1,-1] ? (not necessary ?)
     // validate input sauce
         // get the sauce id from the URL
-        let sauceId = req.params.id
+    
         // does that sauceId exist in the database ?
+        try {
+            Sauce.findById(sauceId)
+        } catch {
+            error => res.status(404).json("Cette sauce n'existe pas");
+            console.log('sauce not found')
+        };
+        
     // update sauce object in db with new like/dislike OR without previous like/dislike
-    let like = req.body.like
+    
         // if like = 1, add userId to usersLiked array field in database
             // is the userId already present in the usersLiked array ?
                 // if present return already Liked response

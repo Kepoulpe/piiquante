@@ -25,7 +25,7 @@ app.use((req, res, next) => {
     next();
 });
 
-app.get('/', (req, res, next) => {
+app.get('/api', (req, res, next) => {
     res.send('app\' works');
 });
  
