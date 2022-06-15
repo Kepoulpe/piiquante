@@ -1,7 +1,7 @@
 const Thing = require('../models/sauces');
 const fs = require('fs');
-const User = require('../models/user');
 const { markAsUntransferable } = require('worker_threads');
+const { error, Console } = require('console');
 
 // user can create one sauce in the data base mongoDB
 exports.createThing = (req, res, next) => {
@@ -9,7 +9,7 @@ exports.createThing = (req, res, next) => {
     delete sauceObject._id;
     const sauce = new Thing({
         ...sauceObject,
-        imageUrl : `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+        imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
     });
     sauce.save()
         .then(() => res.status(201).json({ message: 'Objet enregistré !' }))
@@ -20,10 +20,10 @@ exports.createThing = (req, res, next) => {
 exports.modifyThing = (req, res, next) => {
     // check if user modify the picture
     const sauceObject = req.file ?
-    { 
-        ...JSON.parse(req.body.sauce),
-        imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
-    } : { ...req.body };
+        {
+            ...JSON.parse(req.body.sauce),
+            imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+        } : { ...req.body };
     Thing.updateOne({ _id: req.params.id }, { ...req.body, _id: req.params.id })
         .then(() => res.status(200).json({ message: 'Objet modifié !' }))
         .catch(error => res.status(400).json({ error }));
@@ -33,16 +33,16 @@ exports.modifyThing = (req, res, next) => {
 exports.deleteThing = (req, res, next) => {
     // find the right file and the picture link to this file
     Thing.findOne({ _id: req.params.id })
-      .then(sauce => {
-        const filename = sauce.imageUrl.split('/images/')[1];
-        fs.unlink(`images/${filename}`, () => {
-          Thing.deleteOne({ _id: req.params.id })
-            .then(() => res.status(200).json({ message: 'Objet supprimé !'}))
-            .catch(error => res.status(400).json({ error }));
-        });
-      })
-      .catch(error => res.status(500).json({ error }));
-  };
+        .then(sauce => {
+            const filename = sauce.imageUrl.split('/images/')[1];
+            fs.unlink(`images/${filename}`, () => {
+                Thing.deleteOne({ _id: req.params.id })
+                    .then(() => res.status(200).json({ message: 'Objet supprimé !' }))
+                    .catch(error => res.status(400).json({ error }));
+            });
+        })
+        .catch(error => res.status(500).json({ error }));
+};
 
 // get one sauce in the data base mongoDB 
 exports.getOneThing = (req, res, next) => {
@@ -58,12 +58,14 @@ exports.getAllThings = (req, res, next) => {
         .catch(error => res.status(400).json({ error }));
 };
 
-exports.validateLikeDislikeSaucePayload = (payload) => {
-    const {userId} = payload;
-    if (userId == '' || typeof userId !== 'string') {
-        return { error: 'Veuillez vous identifier' };
-    }
-}
+
+// Unique function to test in sauces.test.js
+// exports.validateLikeDislikeSaucePayload = (payload) => {
+//     const {userId} = payload;
+//     if (userId == '' || typeof userId !== 'string') {
+//         return { error: 'Veuillez vous identifier' };
+//     }
+// }
 
 // post like/dislike for one sauce
 exports.likeDislikeSauce = (req, res, next) => {
@@ -71,55 +73,92 @@ exports.likeDislikeSauce = (req, res, next) => {
     const userId = req.body.userId
     const like = req.body.like
 
-    // TODO if any of the validation questions fail, send an error message with the right status code
-    // validate input payload
-        // is userId present ? is it a string ?
-        try {
-            // ! this is not an if block
-            typeof userId === 'string' || userId !== 'undefined' || userId !== '';
-            console.log('valid user')
-            res.status(401).json({ test: "" });
-        } catch (err) {
-            res.status(401).json({ error: 'Veuillez vous identifier' });
-            console.log('invalid user')
-        };
-
-        // does that user exist in the database ?
-        try {
-            User.findById(userId, checkLike)
-        } catch (err) {
-            res.status(401).json({ error: err | 'Veuillez créer un compte' });
-            console.log('user not in database')
-        };
-        // is like present ?
-        // const checkLike =  ;
-    
-
-        // is it a number ? (not necessary ?)
-        // is like present in the array [0,1,-1] ? (not necessary ?)
-    // validate input sauce
-        // get the sauce id from the URL
-    
-        // does that sauceId exist in the database ?
-        try {
-            Sauce.findById(sauceId)
-        } catch {
-            error => res.status(404).json("Cette sauce n'existe pas");
-            console.log('sauce not found')
-        };
-        
     // update sauce object in db with new like/dislike OR without previous like/dislike
-    
+    switch (like) {
         // if like = 1, add userId to usersLiked array field in database
-            // is the userId already present in the usersLiked array ?
-                // if present return already Liked response
-        // if like = 0, remove userId to usersLiked/usersDisliked array field in database
-            // is the userId already present in the usersLiked/usersDisliked array ?
-                // if not present return "there is no like/dislike" response
+        case 1:
+            Sauce.updateOne({ _id: sauceId }, {
+                $inc: { dislikes: 1 },
+                $push: { usersLiked: userId },
+                _id: sauceId
+            })
+                // return success message
+                .then(() => {
+                    res.status(201).json({ message: 'Like enregistré' });
+                    console.log('Like sauce updated')
+                })
+                // return error message
+                .catch((error) => {
+                    res.status(400).json({ error: error });
+                    console.log('Like not added')
+                })
+            break;
+
         // if like = -1, add userId to usersDisliked array field in database
-            // is the userId already present in the usersDisliked array ?
-                // if present return already Disliked response
-        // update in db either usersLiked or usersDisliked array field
-            // update likes/dislikes field accordingly based on usersLiked/usersDisliked array field length
-        // return success message
+        case -1:
+            Sauce.updateOne({ _id: sauceId }, {
+                $inc: { dislikes: 1 },
+                $push: { usersDisliked: userId },
+                _id: sauceId
+            })
+                // return success message
+                .then(() => {
+                    res.status(201).json({ message: ' Dislike enregistré' });
+                    console.log('Dislike sauce updated')
+                })
+                // return error message
+                .catch((error) => {
+                    res.status(400).json({ error: error });
+                    console.log('Dislike not added')
+                })
+            break;
+
+        // if like = 0, remove userId to usersLiked/usersDisliked array field in database
+        case 0:
+            Sauce.findById(sauceId)
+                .then((sauce) => {
+                    // user unlike
+                    if (sauce.usersLiked.find(user === userId)) {
+                        Sauce.updateOne({ _id: sauceId }, {
+                            $inc: { likes: -1 },
+                            $pull: { usersLiked: userId },
+                            _id: sauceId
+                        })
+                            // return success message
+                            .then(() => {
+                                res.status(201).json({ message: ' Like retiré' });
+                                console.log('Like removed')
+                            })
+                            // return error message
+                            .catch((error) => {
+                                res.status(400).json({ error: error });
+                                console.log('Like not removed')
+                            })
+                        //user undislike
+                    } if (sauce.usersDisliked.find(user => user === userId)) {
+                        Sauce.updateOne({ _id: sauceId }, {
+                            $inc: { dislikes: -1 },
+                            $pull: { usersDisliked: userId },
+                            _id: sauceId
+                        })
+                            // return success message
+                            .then(() => {
+                                res.status(201).json({ message: 'Dislike retiré' });
+                                console.log('Dislike removed')
+                            })
+                            // return error message
+                            .catch((error) => {
+                                res.status(400).json({ error: error });
+                            })
+                    }
+                })
+                // sauce doesnt exist or not found
+                .catch((error) => {
+                    res.status(404).json({ error: error });
+                    console.log('Sauce not found')
+                })
+                .break;
+        default:
+            console.error('Something went wrong')
+    }
 }
