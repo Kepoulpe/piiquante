@@ -77,12 +77,12 @@ exports.likeDislikeSauce = (req, res, next) => {
     switch (like) {
         // if like = 1, add userId to usersLiked array field in database
         case 1:
-            Sauce.updateOne({ _id: sauceId }, {
-                $inc: { dislikes: 1 },
-                $push: { usersLiked: userId },
+            Thing.updateOne({ _id: sauceId }, {
+                likes: +1,
+                usersLiked: userId ,
                 _id: sauceId
             })
-                // return success message
+            //     // return success message
                 .then(() => {
                     res.status(201).json({ message: 'Like enregistré' });
                     console.log('Like sauce updated')
@@ -96,9 +96,9 @@ exports.likeDislikeSauce = (req, res, next) => {
 
         // if like = -1, add userId to usersDisliked array field in database
         case -1:
-            Sauce.updateOne({ _id: sauceId }, {
-                $inc: { dislikes: 1 },
-                $push: { usersDisliked: userId },
+            Thing.updateOne({ _id: sauceId }, {
+                dislikes: +1 ,
+                usersDisliked: userId,
                 _id: sauceId
             })
                 // return success message
@@ -115,12 +115,12 @@ exports.likeDislikeSauce = (req, res, next) => {
 
         // if like = 0, remove userId to usersLiked/usersDisliked array field in database
         case 0:
-            Sauce.findById(sauceId)
+            Thing.findOne({sauceId})
                 .then((sauce) => {
                     // user unlike
-                    if (sauce.usersLiked.find(user === userId)) {
-                        Sauce.updateOne({ _id: sauceId }, {
-                            $inc: { likes: -1 },
+                    if (sauce.usersLiked.find(user => user === userId)) {
+                        Thing.updateOne({ _id: sauceId }, {
+                            likes: -1 ,
                             $pull: { usersLiked: userId },
                             _id: sauceId
                         })
@@ -136,8 +136,8 @@ exports.likeDislikeSauce = (req, res, next) => {
                             })
                         //user undislike
                     } if (sauce.usersDisliked.find(user => user === userId)) {
-                        Sauce.updateOne({ _id: sauceId }, {
-                            $inc: { dislikes: -1 },
+                        Thing.updateOne({ _id: sauceId }, {
+                            dislikes: -1 ,
                             $pull: { usersDisliked: userId },
                             _id: sauceId
                         })
@@ -156,6 +156,7 @@ exports.likeDislikeSauce = (req, res, next) => {
                 .catch((error) => {
                     res.status(404).json({ error: error });
                     console.log('Sauce not found')
+                    console.log(error)
                 })
                 .break;
         default:
