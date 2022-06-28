@@ -2,7 +2,7 @@ const Thing = require('../models/sauces');
 const fs = require('fs');
 const { markAsUntransferable } = require('worker_threads');
 const { error, Console } = require('console');
-const { likeDislikeSauceLogic } = require('./likeDislikeLogic');
+const { likeDislikeSauceLogic } = require('./likeDislikeSauceLogic');
 
 // user can create one sauce in the data base mongoDB
 exports.createThing = (req, res, next) => {
@@ -77,106 +77,22 @@ exports.likeDislikeSauce = async (req, res, next) => {
     sauceRecord._id = req.params.id;
 
     // 3) we get the payload that we will use to actually update like/dislike data with MongoDB
-    const updateLikeDislikeObj = likeDislikeSauceLogic(sauceRecord, req.body)
+    const updateLikeDislikeObj = likeDislikeSauceLogic(sauceRecord, req.body);
 
     // 3bis) send appropriate response if updateLikeDislikeObj is false (user tried to update likes data on his own sauce)
+    if (!updateLikeDislikeObj) {
+        res.status(403).json({error: `Cannot update sauce like/dislike data`});
+        return;
+    }
 
     // 4) we update the sauce data in MongoDB
-    // TODO pass to Thing.updateOne the formatted update object => {$inc: { likes: 1 }, $push: { usersLiked: userId }, _id: sauceId}
-
     // 5) we send a response to the user
+    try {
+        console.log(updateLikeDislikeObj);
+        await Thing.updateOne({ _id: sauceRecord._id }, updateLikeDislikeObj);
+        res.status(200).json({error: `Updated sauce like/dislike data`});
+    } catch (error) {
+        res.status(500).json({error: `Could not update sauce like/dislike data, please try again later`});
+    }
 
-    // const sauceId = req.params.id
-    // const userId = req.body.userId
-    // const like = req.body.like
-
-    // update sauce object in db with new like/dislike OR without previous like/dislike
-    // switch (like) {
-    //     // if like = 1, add userId to usersLiked array field in database
-    //     case 1:
-    //         Thing.updateOne({ _id: sauceId }, {
-    //             $inc: { likes: 1 },
-    //             $push: { usersLiked: userId },
-    //             _id: sauceId
-    //         })
-    //         //     // return success message
-    //             .then(() => {
-    //                 res.status(201).json({ message: 'Like enregistré' });
-    //                 console.log('Like sauce updated')
-    //             })
-    //             // return error message
-    //             .catch((error) => {
-    //                 res.status(400).json({ error: error });
-    //                 console.log('Like not added')
-    //             })
-    //         break;
-
-    //     // if like = -1, add userId to usersDisliked array field in database
-    //     case -1:
-    //         Thing.updateOne({ _id: sauceId }, {
-    //             $inc: { dislikes: 1 },
-    //             $push: { usersDisliked: userId },
-    //             _id: sauceId
-    //         })
-    //             // return success message
-    //             .then(() => {
-    //                 res.status(201).json({ message: ' Dislike enregistré' });
-    //                 console.log('Dislike sauce updated')
-    //             })
-    //             // return error message
-    //             .catch((error) => {
-    //                 res.status(400).json({ error: error });
-    //                 console.log('Dislike not added')
-    //             })
-    //         break;
-
-    //     // if like = 0, remove userId to usersLiked/usersDisliked array field in database
-    //     case 0:
-    //         Thing.findOne({sauceId})
-    //             .then((sauce) => {
-    //                 // user unlike
-    //                 if (sauce.usersLiked.find(user => user === userId)) {
-    //                     Thing.updateOne({ _id: sauceId }, {
-    //                         $inc: { likes: -1 },
-    //                         $pull: { usersLiked: userId },
-    //                         _id: sauceId
-    //                     })
-    //                         // return success message
-    //                         .then(() => {
-    //                             res.status(201).json({ message: ' Like retiré' });
-    //                             console.log('Like removed')
-    //                         })
-    //                         // return error message
-    //                         .catch((error) => {
-    //                             res.status(400).json({ error: error });
-    //                             console.log('Like not removed')
-    //                         })
-                        
-    //                 } else if (sauce.usersDisliked.find(user => user === userId)) { //user undislike
-    //                     Thing.updateOne({ _id: sauceId }, { 
-    //                         $inc: { dislikes: -1 },
-    //                         $pull: { usersDisliked: userId },
-    //                         _id: sauceId
-    //                     })
-    //                         // return success message
-    //                         .then(() => {
-    //                             res.status(201).json({ message: 'Dislike retiré' });
-    //                             console.log('Dislike removed')
-    //                         })
-    //                         // return error message
-    //                         .catch((error) => {
-    //                             res.status(400).json({ error: error });
-    //                         })
-    //                 }
-    //             })
-    //             // sauce doesnt exist or not found
-    //             .catch((error) => {
-    //                 res.status(404).json({ error: error });
-    //                 console.log('Sauce not found')
-    //                 console.log(error)
-    //             })
-    //             break; 
-    //     default:
-    //         console.error('Something went wrong')
-    // }
 }

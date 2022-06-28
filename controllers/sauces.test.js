@@ -1,4 +1,4 @@
-const sauceLogic = require("./likeDislikeLogic");
+const sauceLogic = require("./likeDislikeSauceLogic");
 const likeDislikeSauceLogic = sauceLogic.likeDislikeSauceLogic;
 
 // test suite
@@ -61,9 +61,9 @@ describe("testing like/dislike", () => {
             like: 1,
             userId: "x"
         }
-        // // act
+        // act
         const actual = likeDislikeSauceLogic(testInitialSauce, testReqPayload);
-        // // assert
+        // assert
         expect(actual).toEqual(expected);
     });
 
@@ -87,6 +87,113 @@ describe("testing like/dislike", () => {
         // assert
         expect(actual).toEqual(expected);
     });
+
+    it("given a user who has NOT created a sauce, when he dislikes a sauce that he has already disliked, then it should return false", () => {
+        // arrange
+        const expected = false;
+        const testInitialSauce = {
+            _id: "1234",
+            userId: "y", 
+            likes: 0, 
+            dislikes: 0, 
+            usersLiked: [], 
+            usersDisliked: ["x"] 
+        };
+        const testReqPayload = {
+            like: -1,
+            userId: "y"
+        }
+        // act
+        const actual = likeDislikeSauceLogic(testInitialSauce, testReqPayload);
+        // assert
+        expect(actual).toEqual(expected);
+    });
+
+    it("given a user who has NOT created a sauce, when he dislikes a sauce, then the dislikes prop of the sauce is incremented by 1", () => {
+        // arrange
+        const expected = {$inc: { dislikes: 1 }, $push: { usersDisliked: ["x"] }, _id: "1234"};
+        const testInitialSauce = {
+            _id: "1234",
+            userId: "y", 
+            likes: 0, 
+            dislikes: 0, 
+            usersLiked: [], 
+            usersDisliked: [] 
+        };
+        const testReqPayload = {
+            like: -1,
+            userId: "x"
+        }
+        // act
+        const actual = likeDislikeSauceLogic(testInitialSauce, testReqPayload);
+        // assert
+        expect(actual).toEqual(expected);
+    });
+
+    it("given a user who has NOT created a sauce, when he dislikes a sauce, then his userId should be push to the usersDisliked array", () => {
+        // arrange
+        const expected = {$inc: { dislikes: 1 }, $push: { usersDisliked: ["x"] }, _id: "1234"};
+        const testInitialSauce = {
+            _id: "1234",
+            userId: "y", 
+            likes: 0, 
+            dislikes: 0, 
+            usersLiked: [], 
+            usersDisliked: [] 
+        };
+        const testReqPayload = {
+            like: -1,
+            userId: "x"
+        }
+        // act
+        const actual = likeDislikeSauceLogic(testInitialSauce, testReqPayload);
+        // assert
+        expect(actual).toEqual(expected);
+    });
+
+    it("given a user who has NOT created a sauce, when he unDislikes a sauce, then the dislikes prop of the sauce is decremented by 1 and his user id added to the pull array under the usersDisliked key", () => {
+        // arrange
+        const expected = {$inc: { dislikes: -1 }, $pull: { usersDisliked: "x" }, _id: "1234"};
+        const testInitialSauce = {
+            _id: "1234",
+            userId: "y", 
+            likes: 0, 
+            dislikes: 1, 
+            usersLiked: [], 
+            usersDisliked: ["x"] 
+        };
+        const testReqPayload = {
+            like: 0,
+            userId: "x"
+        }
+        // act
+        const actual = likeDislikeSauceLogic(testInitialSauce, testReqPayload);
+        // assert
+        expect(actual).toEqual(expected);
+    });
+
+    it("given a user who has created a sauce, when he dislikes a sauce, then it should return false", () => {
+        // arrange
+        const expected = false;
+        const testInitialSauce = {
+            _id: "1234",
+            userId: "y", 
+            likes: 0, 
+            dislikes: 1, 
+            usersLiked: [], 
+            usersDisliked: ["x"] 
+        };
+        const testReqPayload = {
+            like: -1,
+            userId: "y"
+        }
+        // act
+        const actual = likeDislikeSauceLogic(testInitialSauce, testReqPayload);
+        // assert
+        expect(actual).toBeFalsy();
+    });
+
+    // TODO given a user who has already liked a sauce, when he dislikes it, then his user id should be set to be removed from the users liked array and the likes value is decremented and his used id is added to the dislikes array and the dislikes value is incremented
 
 });
 
