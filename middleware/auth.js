@@ -7,7 +7,7 @@ module.exports = (req, res, next) => {
         const userId = decodedToken.userId;
         console.log(userId, decodedToken, token);
         if(req.body.userId && req.body.userId !== userId) {
-            throw 'User ID non valide';
+            return res.statuts(401).json({ msg : 'Utilisateur non valide' });
         } else {
             next();
         }

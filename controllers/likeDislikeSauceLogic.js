@@ -23,10 +23,21 @@ exports.likeDislikeSauceLogic = (formattedLikeObj, reqPayload) => {
     }
     switch (like) {
         case 1:
-            const resLike = { $inc: { likes: formattedLikeObj.likes }, $push: { usersLiked: formattedLikeObj.usersLiked }, _id: formattedLikeObj._id };
-            resLike.$inc = { likes: 1 }
-            resLike.$push.usersLiked.push(reqPayload.userId);
-            return resLike;
+            if (formattedLikeObj.usersDisliked.includes(reqPayload.userId)) {
+                const resLike = { $inc: { likes: formattedLikeObj.likes },$inc: { dislikes: formattedLikeObj.likes },$pull: { usersDisliked: formattedLikeObj.usersDisliked }, $push: { usersLiked: formattedLikeObj.usersLiked }, _id: formattedLikeObj._id };
+                resLike.$inc = { likes: 1 }
+                resLike.$inc = { dislikes: -1 }
+                resLike.$push.usersLiked.push(reqPayload.userId)
+                resLike.$pull = { usersDisliked: reqPayload.userId };
+                return resLike;
+            } else {
+                const resLike = { $inc: { likes: formattedLikeObj.likes }, $push: { usersLiked: formattedLikeObj.usersLiked }, _id: formattedLikeObj._id };
+                resLike.$inc = { likes: 1 }
+                resLike.$push.usersLiked.push(reqPayload.userId);
+                return resLike;
+            }
+
+
         case -1:
             const resDislike = { $inc: { dislikes: formattedLikeObj.dislikes }, $push: { usersDisliked: formattedLikeObj.usersDisliked }, _id: formattedLikeObj._id };
             resDislike.$inc = { dislikes: 1 }
@@ -37,15 +48,15 @@ exports.likeDislikeSauceLogic = (formattedLikeObj, reqPayload) => {
             if (formattedLikeObj.usersDisliked.includes(reqPayload.userId)) {
                 const resUndislike = { $inc: { dislikes: formattedLikeObj.dislikes }, $pull: { usersDisliked: formattedLikeObj.usersDisliked }, _id: formattedLikeObj._id };
                 resUndislike.$inc = { dislikes: -1 }
-                resUndislike.$pull =  { usersDisliked: reqPayload.userId };
+                resUndislike.$pull = { usersDisliked: reqPayload.userId };
                 return resUndislike;
             } else if (formattedLikeObj.usersLiked.includes(reqPayload.userId)) {
                 const resUnLike = { $inc: { likes: formattedLikeObj.likes }, $pull: { usersLiked: formattedLikeObj.usersLiked }, _id: formattedLikeObj._id };
-                resUnLike.$inc = { likes : -1 }
-                resUnLike.$pull =  { usersLiked: reqPayload.userId };
+                resUnLike.$inc = { likes: -1 }
+                resUnLike.$pull = { usersLiked: reqPayload.userId };
                 return resUnLike;
             }
-        default :
+        default:
             console.log("Something went wrong");
             return false;
     }
