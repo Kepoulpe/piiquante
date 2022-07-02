@@ -193,7 +193,7 @@ describe("testing like/dislike", () => {
         expect(actual).toBeFalsy();
     });
 
-    // TODO given a user who has already liked a sauce, when he dislikes it, then his user id should be set to be removed from the users liked array and the likes value is decremented and his used id is added to the dislikes array and the dislikes value is incremented
+    
     it("given a user who has NOT created a sauce, when he likes a sauce that he had already dislikes , then the likes prop of the sauce is incremented by 1  and the dislikes prop decremented by 1 and his userId is added and pull from the right arrays", () => {
         // arrange
         const expected = {$inc: { likes: 1 },$inc: { dislikes: -1 }, $push: { usersLiked: "x" }, $pull: { usersDisliked: "x" },  _id: "1234"};
@@ -207,6 +207,27 @@ describe("testing like/dislike", () => {
         };
         const testReqPayload = {
             like: 1,
+            userId: "x"
+        }
+        // act
+        const actual = likeDislikeSauceLogic(testInitialSauce, testReqPayload);
+        // assert
+        expect(actual).toEqual(expected);
+    });
+
+    it("given a user who has NOT created a sauce, when he dislikes a sauce that he had already likes , then the dislikes prop of the sauce is incremented by 1  and the likes prop decremented by 1 and his userId is added and pull from the right arrays", () => {
+        // arrange
+        const expected = {$inc: { likes: -1 },$inc: { dislikes: 1 }, $pull: { usersLiked: "x" }, $push: { usersDisliked: "x" },  _id: "1234"};
+        const testInitialSauce = {
+            _id: "1234",
+            userId: "y", 
+            likes: 1, 
+            dislikes: 0, 
+            usersLiked: ["x"], 
+            usersDisliked: [] 
+        };
+        const testReqPayload = {
+            like: -1,
             userId: "x"
         }
         // act

@@ -24,12 +24,12 @@ exports.likeDislikeSauceLogic = (formattedLikeObj, reqPayload) => {
     switch (like) {
         case 1:
             if (formattedLikeObj.usersDisliked.includes(reqPayload.userId)) {
-                const resLike = { $inc: { likes: formattedLikeObj.likes },$inc: { dislikes: formattedLikeObj.likes },$pull: { usersDisliked: formattedLikeObj.usersDisliked }, $push: { usersLiked: formattedLikeObj.usersLiked }, _id: formattedLikeObj._id };
-                resLike.$inc = { likes: 1 }
-                resLike.$inc = { dislikes: -1 }
-                resLike.$push.usersLiked.push(reqPayload.userId)
-                resLike.$pull = { usersDisliked: reqPayload.userId };
-                return resLike;
+                const resLikeWhenDislike = { $inc: { likes: formattedLikeObj.likes },$inc: { dislikes: formattedLikeObj.likes },$pull: { usersDisliked: formattedLikeObj.usersDisliked }, $push: { usersLiked: formattedLikeObj.usersLiked }, _id: formattedLikeObj._id };
+                resLikeWhenDislike.$inc = { likes: 1 }
+                resLikeWhenDislike.$inc = { dislikes: -1 }
+                resLikeWhenDislike.$push = { usersLiked: reqPayload.userId}
+                resLikeWhenDislike.$pull = { usersDisliked: reqPayload.userId };
+                return resLikeWhenDislike;
             } else {
                 const resLike = { $inc: { likes: formattedLikeObj.likes }, $push: { usersLiked: formattedLikeObj.usersLiked }, _id: formattedLikeObj._id };
                 resLike.$inc = { likes: 1 }
@@ -39,10 +39,19 @@ exports.likeDislikeSauceLogic = (formattedLikeObj, reqPayload) => {
 
 
         case -1:
+            if (formattedLikeObj.usersLiked.includes(reqPayload.userId)) {
+                const resDislikeWhenLike = { $inc: { likes: formattedLikeObj.likes },$inc: { dislikes: formattedLikeObj.likes },$push: { usersDisliked: formattedLikeObj.usersDisliked }, $pull: { usersLiked: formattedLikeObj.usersLiked }, _id: formattedLikeObj._id };
+                resDislikeWhenLike.$inc = { likes: -1 }
+                resDislikeWhenLike.$inc = { dislikes: 1 }
+                resDislikeWhenLike.$pull = { usersLiked: reqPayload.userId}
+                resDislikeWhenLike.$push = { usersDisliked: reqPayload.userId };
+                return resDislikeWhenLike;
+            } else {
             const resDislike = { $inc: { dislikes: formattedLikeObj.dislikes }, $push: { usersDisliked: formattedLikeObj.usersDisliked }, _id: formattedLikeObj._id };
             resDislike.$inc = { dislikes: 1 }
             resDislike.$push.usersDisliked.push(reqPayload.userId);
             return resDislike;
+            }
         case 0:
             // if usersDisliked already contains req payload userId it should remove 1 from the dislikes count and remove userId from the usersDislikd array
             if (formattedLikeObj.usersDisliked.includes(reqPayload.userId)) {
