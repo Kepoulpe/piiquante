@@ -21,13 +21,27 @@ exports.createThing = (req, res, next) => {
 exports.modifyThing = (req, res, next) => {
     // check if user modify the picture
     const sauceObject = req.file ?
-        {
-            ...JSON.parse(req.body.sauce),
-            imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
-        } : { ...req.body };
-    Thing.updateOne({ _id: req.params.id }, { ...req.body, _id: req.params.id })
-        .then(() => res.status(200).json({ message: 'Objet modifié !' }))
-        .catch(error => res.status(400).json({ error }));
+    {
+      ...JSON.parse(req.body.sauce),
+      imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+    } : { ...req.body };
+  if (req.file) {
+    Thing.findOne({ _id: req.params.id })
+      .then((sauce) => {
+        const filename = sauce.imageUrl.split('/images/')[1];
+        fs.unlink(`images/${filename}`, () => {
+          Thing.updateOne({ _id: req.params.id }, { ...sauceObject, _id: req.params.id })
+            .then(() => { res.status(200).json({ message: 'Sauce mise à jour!' }); })
+            .catch((error) => { res.status(400).json({ error }); });
+        })
+      })
+      .catch((error) => { res.status(500).json({ error }); });
+
+  } else {
+    Thing.updateOne({ _id: req.params.id }, { ...sauceObject, _id: req.params.id })
+      .then(() => res.status(200).json({ message: 'Sauce mise à jour!' }))
+      .catch((error) => res.status(400).json({ error }));
+  }
 };
 
 // delete one sauce on the data base mongoDB
