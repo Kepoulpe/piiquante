@@ -15,8 +15,8 @@ exports.likeDislikeSauceLogic = (formattedLikeObj, reqPayload) => {
     // this if block is for the case the user who has created a sauce tries to update its like data
     // this other if bloc is for the case a user tries to like/dislike a sauce twice
     if (
-        formattedLikeObj.userId == reqPayload.userId
-        || like === 1 && formattedLikeObj.usersLiked.includes(reqPayload.userId)
+        // formattedLikeObj.userId == reqPayload.userId ||
+        like === 1 && formattedLikeObj.usersLiked.includes(reqPayload.userId)
         || like === -1 && formattedLikeObj.usersDisliked.includes(reqPayload.userId)
     ) {
         return false;
@@ -39,6 +39,9 @@ exports.likeDislikeSauceLogic = (formattedLikeObj, reqPayload) => {
 
 
         case -1:
+            if (formattedLikeObj.userId == reqPayload.userId) {
+                return false;
+            }
             if (formattedLikeObj.usersLiked.includes(reqPayload.userId)) {
                 const resDislikeWhenLike = { $inc: { likes: formattedLikeObj.likes },$inc: { dislikes: formattedLikeObj.likes },$push: { usersDisliked: formattedLikeObj.usersDisliked }, $pull: { usersLiked: formattedLikeObj.usersLiked }, _id: formattedLikeObj._id };
                 resDislikeWhenLike.$inc = { likes: -1 }
