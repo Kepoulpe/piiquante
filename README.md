@@ -17,3 +17,6 @@ or RUN THE BACKEND SERVER NORMAL (without auto reaload for dev)
 
 Server should be start on port 3000 make sure you're port is free to use
 
+4- Info for user password
+
+It shoul contain at least 8 characters (islenght ({min: 8} app.js l.12) and include symbols letters and numbers (regex in app.js l.14)
