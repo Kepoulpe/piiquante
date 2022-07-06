@@ -3,6 +3,7 @@ const mongoose = require('mongoose')
 const userRoutes = require('./routes/user');
 const saucesRoutes = require('./routes/sauces')
 const path = require('path');
+const helmet= require('helmet');
 
 const express = require('express');
 const app = express();
@@ -15,6 +16,10 @@ mongoose.connect(process.env.MONGODB_CONNECTION_STRING, {
 .catch(() => console.log('Connexion à MongoDB échouée !'));
 
 app.use(express.json());
+
+app.use(helmet ({
+    crossOriginResourcePolicy : false
+}));
 
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
