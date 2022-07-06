@@ -5,7 +5,9 @@ PIIQUANTE
 
 - npm install
 
-2- RUN THE BACKEND SERVER DEV (nodemon)
+2- CREATE a .env file based obn the .env.example
+
+3- RUN THE BACKEND SERVER DEV (nodemon)
 
 - npm run dev
 
